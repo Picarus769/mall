@@ -34,7 +34,7 @@
 	import TabControl from 'components/content/tabControl/TabControl.vue'
 	import GoodsList from 'components/content/goods/GoodsList.vue'
 	import Scroll from 'components/common/scroll/Scroll.vue'
-	import BackTop from '../../components/content/backTop/BackTop.vue'
+	
 	
 	import HomeSwiper	from './childComps/HomeSwiper'
 	import HomeRecommend from './childComps/HomeRecommend'
@@ -43,6 +43,7 @@
 	
 	import {getHomeMultidata, getHomeGoods} from 'network/home.js'
 	import {debounce} from '../../common/utils.js'
+	import {itemListenerMixin, backTopMixin} from 'common/mixin.js'
 	
   export default{
     name:'home',
@@ -53,8 +54,7 @@
 			FeatureView,
 			TabControl,
 			GoodsList,
-			Scroll,
-			BackTop
+			Scroll
 			
 		},
 		computed: {
@@ -73,12 +73,14 @@
 					'sell':{page: 0, list: []}
 				},
 				currentGoodsType:'pop',
-				showBackTop: false,
+				
 				tabOffsetTop: 0,
 				isTabFixed: false,
-				saveY: 0
+				saveY: 0,
+				itemImgListener: null,
 			}
 		},
+		mixins: [itemListenerMixin, backTopMixin],
 		created() {
 			this.getHomeMultidata()
 			
@@ -88,10 +90,10 @@
 			
 		},
 		mounted() {
-			const refresh = debounce(this.$refs.scroll.refresh, 300)
-			this.$bus.$on('imgLoad', () => {
-				refresh()
-			})
+			// const refresh = debounce(this.$refs.scroll.refresh, 300)
+			// this.$bus.$on('itemImgLoad', () => {
+			// 	refresh()
+			// })
 			
 		},
 		activated() {
@@ -100,6 +102,8 @@
 		},
 		deactivated() {
 			this.saveY = this.$refs.scroll.getScrollY()
+			
+			this.$bus.$off('itemImgLoad', this.itemImgListener)
 		},
 		methods:{
 			//事件监听
@@ -109,9 +113,7 @@
 				this.$refs.tabControl1.currentIndex = index
 				this.$refs.tabControl2.currentIndex = index
 			},
-			backClick() {
-				this.$refs.scroll.scrollTo(0, 0, 500)
-			},
+			
 			contentScroll(position) {
 				this.showBackTop = (-position.y) > 1000
 				this.isTabFixed = (-position.y) > this.tabOffsetTop
