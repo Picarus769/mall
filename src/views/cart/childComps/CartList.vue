@@ -2,7 +2,7 @@
 	<div class="cart-list">
 		<scroll class="content" ref="scroll">
 			<cart-list-item v-for="(item, index) in cartList"
-											keys="index"
+											:key="index"
 											:item="item" />
 		</scroll>
 		
